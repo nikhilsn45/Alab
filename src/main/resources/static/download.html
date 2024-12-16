@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        input[type="text"], input[type="password"] {
+            margin: 10px 0;
+            padding: 8px;
+            width: 80%;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Download File</h2>
+    <form id="downloadForm">
+        <input type="text" name="uniqueUrl" id="uniqueUrl" placeholder="Enter File URL" required><br>
+        <input type="password" name="passcode" id="passcode" placeholder="Enter Passcode" required><br>
+        <button type="submit">Download</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById("downloadForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const uniqueUrl = document.getElementById("uniqueUrl").value;
+        const passcode = document.getElementById("passcode").value;
+
+        const url = `/api/files/download/${uniqueUrl}?passcode=${encodeURIComponent(passcode)}`;
+
+        fetch(url, {
+            method: "GET"
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            } else {
+                throw new Error("File not found or passcode incorrect.");
+            }
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "decrypted_file";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Failed to download file: " + error.message);
+        });
+    });
+</script>
+</body>
+</html>
